@@ -1,6 +1,8 @@
 import math
 import random
 
+import matplotlib.pyplot as plt
+
 # ========================
 # DOMINIOS Y RESTRICCIONES AC-3
 # ========================
@@ -185,5 +187,19 @@ class PuffinSwarm:
         for ind in self.front:
             print(ind)
 
+        # Visualización gráfica del frente de Pareto
+        pareto_front = [ind.fitness() for ind in self.front]
+        costos = [-c for _, c in pareto_front]  # Recordar que el costo se guardó como negativo
+        alcances = [a for a, _ in pareto_front]
+
+        plt.figure(figsize=(8, 6))
+        plt.scatter(costos, alcances, color='blue', label='Soluciones Pareto')
+        plt.title('Frente de Pareto')
+        plt.xlabel('Costo Total')
+        plt.ylabel('Alcance Total')
+        plt.grid(True, linestyle='--', alpha=0.6)
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
 # Ejecutar
 PuffinSwarm().optimizer()
