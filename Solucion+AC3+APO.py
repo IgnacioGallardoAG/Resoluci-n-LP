@@ -151,6 +151,7 @@ class PuffinSwarm:
         self.swarm = []
         self.g = None
         self.front = []
+        self.convergence_data = []  # ← agregado
 
     def initialize(self):
         for _ in range(self.n_individual):
@@ -175,6 +176,8 @@ class PuffinSwarm:
 
     def show_results(self, t):
         print(f"Iteración {t}: Mejor individuo → {self.g}")
+        alcance, costo = self.g.fitness()
+        self.convergence_data.append((t, alcance, -costo))  # ← guardamos valores
 
     def summary_table(self):
         pareto_fitness = [ind.fitness() for ind in self.front]
@@ -188,6 +191,30 @@ class PuffinSwarm:
         print(f"{'Máximo':<10} | {max(alcances):<10} | {max(costos):<10}")
         print(f"{'Promedio':<10} | {statistics.mean(alcances):<10.2f} | {statistics.mean(costos):<10.2f}")
         print(f"{'Mediana':<10} | {statistics.median(alcances):<10.2f} | {statistics.median(costos):<10.2f}")
+
+    def plot_convergence(self):
+        iteraciones = [i for i, _, _ in self.convergence_data]
+        alcances = [a for _, a, _ in self.convergence_data]
+        costos = [c for _, _, c in self.convergence_data]
+
+        plt.figure(figsize=(12, 5))
+
+        plt.subplot(1, 2, 1)
+        plt.plot(iteraciones, alcances, marker='o', color='green')
+        plt.title('Convergencia del Alcance')
+        plt.xlabel('Iteración')
+        plt.ylabel('Alcance')
+        plt.grid(True)
+
+        plt.subplot(1, 2, 2)
+        plt.plot(iteraciones, costos, marker='o', color='red')
+        plt.title('Convergencia del Costo')
+        plt.xlabel('Iteración')
+        plt.ylabel('Costo')
+        plt.grid(True)
+
+        plt.tight_layout()
+        plt.show()
 
     def optimizer(self):
         self.initialize()
@@ -205,13 +232,15 @@ class PuffinSwarm:
 
         plt.figure(figsize=(8, 6))
         plt.scatter(costos, alcances, color='blue', label='Soluciones Pareto')
-        plt.title('Frente de Pareto')
+        plt.title('Frente de Pareto (Dispersión)')
         plt.xlabel('Costo Total')
         plt.ylabel('Alcance Total')
         plt.grid(True, linestyle='--', alpha=0.6)
         plt.legend()
         plt.tight_layout()
         plt.show()
+
+        self.plot_convergence()
 
 # ========================
 # EJECUCIÓN
