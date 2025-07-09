@@ -11,7 +11,7 @@ El enunciado establece que existen combinaciones posibles de cantidad de anuncio
 - **Python 3.12**
 - **Algoritmo de Consistencia AC-3:** Reduce los valores posibles de cada variable aplicando restricciones entre pares.
 - **Algoritmo Artic Puffin Optimization (APO):** Método metaheurístico inspirado en aves árticas, utilizado para explorar soluciones válidas en el espacio multiobjetivo.
-- **Matplotlib:** Se usa para graficar el frente de Pareto final (alcance vs costo).
+- **Matplotlib:** Se usa para graficar el frente de Pareto final (calidad vs costo).
 
 ---
 
