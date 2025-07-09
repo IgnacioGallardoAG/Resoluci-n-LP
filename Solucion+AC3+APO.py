@@ -1,5 +1,6 @@
 import math
 import random
+import statistics
 
 import matplotlib.pyplot as plt
 
@@ -30,14 +31,11 @@ def revise(x, y):
     y_domain = domains[y]
     all_constraints = [c for c in constraints if c[0] == x and c[1] == y]
     for x_val in x_domain:
-        satisfies = False
-        for y_val in y_domain:
-            for constraint in all_constraints:
-                if constraints[constraint](x_val, y_val):
-                    satisfies = True
-                    break
-            if satisfies:
-                break
+        satisfies = any(
+            constraints[c](x_val, y_val)
+            for y_val in y_domain
+            for c in all_constraints
+        )
         if not satisfies:
             domains[x].remove(x_val)
             revised = True
@@ -51,13 +49,13 @@ def ac3(arcs):
             neighbors = [n for n in arcs if n[1] == x and n[0] != y]
             queue += neighbors
 
-ac3([('A', 'B'), ('B', 'A'), ('C', 'D'), ('D', 'C'), ('C', 'E'), ('E', 'C')])
+ac3(list(constraints.keys()))
 
 print("Dominios luego de aplicar AC-3:")
 for var, dom in domains.items():
     print(f"{var}: {dom}")
+print("="*40)
 
-print("===============================")
 
 # ========================
 # FUNCIONES DE PARETO
@@ -130,7 +128,6 @@ class Individual:
         return f1 > f2 or (f1 == f2 and c1 > c2)
 
     def move(self, g, t, max_iter):
-        # Movimiento inspirado en APO
         for j in range(self.dimension):
             alpha = random.uniform(-1, 1) * math.exp(-2 * t / max_iter)
             new_val = round(self.x[j] + alpha * (g.x[j] - self.x[j]))
@@ -141,8 +138,7 @@ class Individual:
             self.x = self.generate_valid_solution()
 
     def copy(self, other):
-        if isinstance(other, Individual):
-            self.x = other.x.copy()
+        self.x = other.x.copy()
 
     def __str__(self):
         f1, c1 = self.fitness()
@@ -163,9 +159,9 @@ class PuffinSwarm:
             self.front = update_pareto_front(self.front, ind)
 
         self.g = self.swarm[0]
-        for i in range(1, self.n_individual):
-            if self.swarm[i].is_better_than(self.g):
-                self.g.copy(self.swarm[i])
+        for ind in self.swarm[1:]:
+            if ind.is_better_than(self.g):
+                self.g.copy(ind)
         self.show_results(0)
 
     def evolve(self):
@@ -180,16 +176,31 @@ class PuffinSwarm:
     def show_results(self, t):
         print(f"Iteración {t}: Mejor individuo → {self.g}")
 
+    def summary_table(self):
+        pareto_fitness = [ind.fitness() for ind in self.front]
+        alcances = [a for a, _ in pareto_fitness]
+        costos = [-c for _, c in pareto_fitness]  # invertir porque están negativos
+
+        print("\nResumen descriptivo del Frente de Pareto:")
+        print(f"{'Métrica':<10} | {'Alcance':<10} | {'Costo':<10}")
+        print("-" * 35)
+        print(f"{'Mínimo':<10} | {min(alcances):<10} | {min(costos):<10}")
+        print(f"{'Máximo':<10} | {max(alcances):<10} | {max(costos):<10}")
+        print(f"{'Promedio':<10} | {statistics.mean(alcances):<10.2f} | {statistics.mean(costos):<10.2f}")
+        print(f"{'Mediana':<10} | {statistics.median(alcances):<10.2f} | {statistics.median(costos):<10.2f}")
+
     def optimizer(self):
         self.initialize()
         self.evolve()
+
         print("\nFrente de Pareto final:")
         for ind in self.front:
             print(ind)
 
-        # Visualización gráfica del frente de Pareto
+        self.summary_table()
+
         pareto_front = [ind.fitness() for ind in self.front]
-        costos = [-c for _, c in pareto_front]  # Recordar que el costo se guardó como negativo
+        costos = [-c for _, c in pareto_front]
         alcances = [a for a, _ in pareto_front]
 
         plt.figure(figsize=(8, 6))
@@ -201,5 +212,9 @@ class PuffinSwarm:
         plt.legend()
         plt.tight_layout()
         plt.show()
-# Ejecutar
+
+# ========================
+# EJECUCIÓN
+# ========================
+
 PuffinSwarm().optimizer()
