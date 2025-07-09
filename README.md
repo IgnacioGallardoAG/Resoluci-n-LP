@@ -1,6 +1,6 @@
 # Optimización de Campañas Publicitarias con Restricciones
 
-Este proyecto resuelve un problema de optimización multiobjetivo donde se busca **asignar recursos publicitarios** en distintos medios (TV, diario, revista y radio), **maximizando el alcance total** y **minimizando el costo**, cumpliendo con restricciones de presupuesto para cada combinación de medios.
+Este proyecto resuelve un problema de optimización multiobjetivo donde se busca **asignar recursos publicitarios** en distintos medios (TV, diario, revista y radio), **maximizando la calidad** y **minimizando el costo**, cumpliendo con restricciones de presupuesto para cada combinación de medios.
 
 El enunciado establece que existen combinaciones posibles de cantidad de anuncios por canal, cada uno con un alcance y costo distinto, pero sujeto a **restricciones presupuestarias combinadas** entre ellos.
 

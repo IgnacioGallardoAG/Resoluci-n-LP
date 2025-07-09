@@ -56,7 +56,6 @@ for var, dom in domains.items():
     print(f"{var}: {dom}")
 print("="*40)
 
-
 # ========================
 # FUNCIONES DE PARETO
 # ========================
@@ -97,9 +96,10 @@ class Problem:
         )
 
     def fit(self, x):
-        alcance = 1000*x[0] + 2000*x[1] + 1500*x[2] + 2500*x[3] + 300*x[4]
+        # Calidad: valores promedio de valorización
+        calidad = 75*x[0] + 93*x[1] + 50*x[2] + 70*x[3] + 25*x[4]
         costo = 180*x[0] + 325*x[1] + 60*x[2] + 110*x[3] + 15*x[4]
-        return (alcance, -costo)
+        return (calidad, -costo)  # max calidad, min costo
 
     def random_value(self, var):
         return random.choice(self.domains[var])
@@ -141,8 +141,8 @@ class Individual:
         self.x = other.x.copy()
 
     def __str__(self):
-        f1, c1 = self.fitness()
-        return f"x: {self.x}, alcance: {f1}, costo: {-c1}"
+        calidad, c1 = self.fitness()
+        return f"x: {self.x}, calidad: {calidad}, costo: {-c1}"
 
 class PuffinSwarm:
     def __init__(self):
@@ -151,14 +151,13 @@ class PuffinSwarm:
         self.swarm = []
         self.g = None
         self.front = []
-        self.convergence_data = []  # ← agregado
+        self.convergence_data = []
 
     def initialize(self):
         for _ in range(self.n_individual):
             ind = Individual()
             self.swarm.append(ind)
             self.front = update_pareto_front(self.front, ind)
-
         self.g = self.swarm[0]
         for ind in self.swarm[1:]:
             if ind.is_better_than(self.g):
@@ -176,34 +175,32 @@ class PuffinSwarm:
 
     def show_results(self, t):
         print(f"Iteración {t}: Mejor individuo → {self.g}")
-        alcance, costo = self.g.fitness()
-        self.convergence_data.append((t, alcance, -costo))  # ← guardamos valores
+        calidad, costo = self.g.fitness()
+        self.convergence_data.append((t, calidad, -costo))
 
     def summary_table(self):
         pareto_fitness = [ind.fitness() for ind in self.front]
-        alcances = [a for a, _ in pareto_fitness]
-        costos = [-c for _, c in pareto_fitness]  # invertir porque están negativos
-
+        calidades = [a for a, _ in pareto_fitness]
+        costos = [-c for _, c in pareto_fitness]
         print("\nResumen descriptivo del Frente de Pareto:")
-        print(f"{'Métrica':<10} | {'Alcance':<10} | {'Costo':<10}")
+        print(f"{'Métrica':<10} | {'Calidad':<10} | {'Costo':<10}")
         print("-" * 35)
-        print(f"{'Mínimo':<10} | {min(alcances):<10} | {min(costos):<10}")
-        print(f"{'Máximo':<10} | {max(alcances):<10} | {max(costos):<10}")
-        print(f"{'Promedio':<10} | {statistics.mean(alcances):<10.2f} | {statistics.mean(costos):<10.2f}")
-        print(f"{'Mediana':<10} | {statistics.median(alcances):<10.2f} | {statistics.median(costos):<10.2f}")
+        print(f"{'Mínimo':<10} | {min(calidades):<10} | {min(costos):<10}")
+        print(f"{'Máximo':<10} | {max(calidades):<10} | {max(costos):<10}")
+        print(f"{'Promedio':<10} | {statistics.mean(calidades):<10.2f} | {statistics.mean(costos):<10.2f}")
+        print(f"{'Mediana':<10} | {statistics.median(calidades):<10.2f} | {statistics.median(costos):<10.2f}")
 
     def plot_convergence(self):
         iteraciones = [i for i, _, _ in self.convergence_data]
-        alcances = [a for _, a, _ in self.convergence_data]
+        calidades = [a for _, a, _ in self.convergence_data]
         costos = [c for _, _, c in self.convergence_data]
-
         plt.figure(figsize=(12, 5))
 
         plt.subplot(1, 2, 1)
-        plt.plot(iteraciones, alcances, marker='o', color='green')
-        plt.title('Convergencia del Alcance')
+        plt.plot(iteraciones, calidades, marker='o', color='green')
+        plt.title('Convergencia de la Calidad')
         plt.xlabel('Iteración')
-        plt.ylabel('Alcance')
+        plt.ylabel('Calidad')
         plt.grid(True)
 
         plt.subplot(1, 2, 2)
@@ -228,13 +225,13 @@ class PuffinSwarm:
 
         pareto_front = [ind.fitness() for ind in self.front]
         costos = [-c for _, c in pareto_front]
-        alcances = [a for a, _ in pareto_front]
+        calidades = [a for a, _ in pareto_front]
 
         plt.figure(figsize=(8, 6))
-        plt.scatter(costos, alcances, color='blue', label='Soluciones Pareto')
+        plt.scatter(costos, calidades, color='blue', label='Soluciones Pareto')
         plt.title('Frente de Pareto (Dispersión)')
         plt.xlabel('Costo Total')
-        plt.ylabel('Alcance Total')
+        plt.ylabel('Calidad Total')
         plt.grid(True, linestyle='--', alpha=0.6)
         plt.legend()
         plt.tight_layout()
